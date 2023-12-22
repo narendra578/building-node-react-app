@@ -1,152 +1,110 @@
-#!/usr/bin/env groovy
-def projectName = currentBuild.projectName
-def version = env.BUILD_NUMBER
-def buildTag = env.BUILD_TAG
-def fileName = env.npmPack
 pipeline {
-    agent { 
-    node { label 'master' }
-     }
-     
+    agent any
+    
     environment {
-        CI = 'true'
-        JENKINS_CRUMB = 'curl user username:password "<jenkins-url>/crumbIssuer/api/xml?xpath=concat(//crumbRequestField, \":\",//crumb)"'
-		
+        DEV_SCM_REPOSITORY = 'https://github.com/pavanpandu-aws/building-node-react-app.git'
+        DEV_SCM_BRANCH = 'master'
+        SONAR_PROJECT_KEY = 'a7fe1cf77dea3a840ac7b1c14266211ffa469399'
+        SONAR_LOGIN = credentials('sonar-cred')
+        SONAR_SERVER_URL = 'http://172.174.215.47:9000/'
+        EMAIL_NOTIFICATION = 'pavankuma239@gmail.com'
     }
+    
     stages {
-        stage("Checkout") {
+        stage("Check Node.js and npm") {
             steps {
-                load "environmentVariables.groovy"
-                echo "${env.DEV_SCM_REPOSITORY}"
-                echo "${env.DEV_SCM_BRANCH}"
-                git(url: "${env.DEV_SCM_REPOSITORY}", branch: "${env.DEV_SCM_BRANCH}", poll: true)
+                script {
+                    def nodeInstalled = tool 'NodeJS' == null
+                    if (nodeInstalled) {
+                        echo "Node.js not found. Installing Node.js..."
+                        tool name: 'NodeJS', type: 'jenkins.plugins.nodejs.tools.NodeJSInstallation'
+                    } else {
+                        echo "Node.js is already installed."
+                    }
+
+                    def npmHome = sh(script: 'which npm', returnStatus: true).trim()
+                    if (npmHome) {
+                        echo "npm is already installed."
+                    } else {
+                        echo "npm not found. Installing npm..."
+                        sh 'curl -L https://www.npmjs.com/install.sh | sh'
+                    }
+                }
             }
         }
 
-        stage("Build") {
-        steps {
-                echo "Building.."
-                //sh 'mvn org.codehaus.mojo:exec-maven-plugin:exec'
-               sh 'npm install'
-            }
-		}
-		
-		stage("SonarQube analysis") {
-			steps {
-				withSonarQubeEnv('SonarQubeDev') {
-      			sh 'npm run sonar-scanner'
-    			}
-    			}
-    			}
-		
-		
-		/*stage("SonarQube analysis") {
-			steps {
-				withSonarQubeEnv('SonarQubeDev') {
-      			sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:3.6.0.1398:sonar'
-    			}
-    			}
-    		
-  			}*/
-  			
-  			/*stage("SonarQube Analysis") {
-        		steps {
-        		//Defines your NodeJS environment and Tells Sonar where to run the code. Available under Manage Jenkins > Global tool Configuration
-        		//NodeJS plugin required to configure this
-            nodejs(nodeJSInstallationName: 'NodeJSLocal', configId: '') {
-                // sonar script to run in a NodeJS Module
-                script {
-                    withSonarQubeEnv('SonarQubeDev') {
-                    def scannerHome = tool 'sonarScanner';
-                    sh "${scannerHome}/bin/sonar-scanner -Dsonar.login=[my analysis token]"
-                }
-            }
+	stage("Checkout") {
+            steps {
+                echo "Checking out code..."
+                checkout([$class: 'GitSCM', branches: [[name: "${env.DEV_SCM_BRANCH}"]], userRemoteConfigs: [[url: env.DEV_SCM_REPOSITORY]]])
             }
         }
-    }*/	
-		
+
+        stage("SonarQube analysis") {
+            steps {
+                script {
+                    withSonarQubeEnv('SonarQubeDev') {
+                        def scannerHome = tool 'sonarScanner'
+                        sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=${env.SONAR_PROJECT_KEY} -Dsonar.login=${env.SONAR_LOGIN} -Dsonar.host.url=${env.SONAR_SERVER_URL}"
+                    }
+                }
+            }
+        }
+
         stage("Quality Gate") {
             steps {
                 timeout(time: 1, unit: 'HOURS') {
-                    // Parameter indicates whether to set pipeline to UNSTABLE if Quality Gate fails
-                    // true = set pipeline to UNSTABLE, false = don't
-                    // Requires SonarQube Scanner for Jenkins 2.7+
-                    waitForQualityGate abortPipeline: true
+                    script {
+                        def qualityGate = waitForQualityGate()
+                        if (qualityGate.status != 'OK') {
+                            error "Quality Gate did not pass. Check SonarQube dashboard for details."
+                        }
+                    }
                 }
             }
         }
 
-         stage('Test') {
+        stage("Test") {
             steps {
+                echo "Running tests..."
                 sh './jenkins/scripts/test.sh'
             }
         }
 
-//        stage('Deliver') {
-//            steps {
-//                sh './jenkins/scripts/deliver.sh'
-//                input message: 'Finished using the web site? (Click "Proceed" to continue)'
-//                sh './jenkins/scripts/kill.sh'
-//            }
-//        }
-        
-        stage('Pack artefacts'){
+        stage("Update Version") {
             steps {
-            script {
-                def npmPack = sh(returnStdout:true, script:'npm pack').trim()
-                env.npmPack = npmPack
-            	sh "echo ${npmPack}"
-            }   
+                echo "Updating version..."
+                script {
+                    def packageJson = readJSON file: 'package.json'
+                    def currentVersion = packageJson.version
+                    def newVersion = currentVersion.replaceAll(/(\d+)$/) { it.toInteger() + 1 }
+                    packageJson.version = newVersion
+                    writeJSON file: 'package.json', json: packageJson
+                    echo "Updated version to: ${newVersion}"
+                }
             }
         }
 
-        
-        stage('Archive/Upload Artefact to Nexus'){
- 
-                steps{
-                      nexusArtifactUploader(
-						    nexusVersion: 'nexus3',
-						    protocol: 'http',
-						    nexusUrl: 'localhost:8081',
-						    groupId: 'com.example',
-						    version: version,
-						    repository: 'DynamicsDeveloperReleases',
-						    credentialsId: 'jenkins-nexus-authentication',
-						    artifacts: [
-						        [artifactId: projectName,
-						         classifier: '',
-						         file: fileName,
-						         type: 'tgz']
-						    			]
- 									)
-                                          }
-                                       }
-    								}
+        stage("Commit and Push Version Update") {
+            steps {
+                echo "Committing and pushing version update..."
+                script {
+                    sh 'git config user.email "pavankuma239@gmail.com"'
+                    sh 'git config user.name "pavan"'
+                    sh 'git add package.json'
+                    sh 'git commit -m "Bump version"'
+                    sh 'git push origin ${env.DEV_SCM_BRANCH}'
+                }
+            }
+        }
+    }
 
     post {
-        always {
-          cleanWs() 
-          
- 
-        }
-        
-        success{
-            
-                sh 'git commit "package.json" -m'
-            
-
-        }
-
-        
         failure {
-             //mail to: 'someone@somewhere.com' , subject: "Status of pipeline: ${currentBuild.fullDisplayName}" , body: "${env.BUILD_URL} has result ${currentBuild.result}"
-        	echo "${currentBuild.projectName} has failed at ${env.BUILD_URL}"
-        	
+            echo "Build failed. Sending alerts..."
+            mail to: "${env.EMAIL_NOTIFICATION}",
+                 subject: "Jenkins Build Failed: ${currentBuild.fullDisplayName}",
+                 body: "Build failed. Check Jenkins console output for details."
         }
-       
     }
-        
-    }
-    
-
-		
+}
