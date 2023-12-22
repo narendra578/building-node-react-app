@@ -4,9 +4,9 @@ pipeline {
     environment {
         DEV_SCM_REPOSITORY = 'https://github.com/pavanpandu-aws/building-node-react-app.git'
         DEV_SCM_BRANCH = 'master'
-        SONAR_PROJECT_KEY = 'a7fe1cf77dea3a840ac7b1c14266211ffa469399'
-        SONAR_LOGIN = credentials('sonar-cred')
-        SONAR_SERVER_URL = 'http://172.174.215.47:9000/'
+        SONAR_PROJECT_KEY = 'demo'
+        SONAR_SERVER_URL = 'http://172.174.215.47:9000'
+        SONAR_LOGIN = 'a7fe1cf77dea3a840ac7b1c14266211ffa469399'
         EMAIL_NOTIFICATION = 'pavankuma239@gmail.com'
 	JAVA_HOME = '/opt/jdk-21.0.1'
         PATH = "${JAVA_HOME}/bin:${env.PATH}"
@@ -51,10 +51,14 @@ pipeline {
         stage("SonarQube analysis") {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: 'sonar-cred', passwordVariable: 'SONAR_LOGIN_PSW', usernameVariable: 'SONAR_LOGIN')]) {
-                        def scannerHome = tool 'sonarScanner'
-                        sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=${env.SONAR_PROJECT_KEY} -Dsonar.login=${env.SONAR_LOGIN} -Dsonar.host.url=${env.SONAR_SERVER_URL}"
-		    }
+                    sh """
+                        sonar-scanner \
+                        -Dsonar.projectKey=${env.SONAR_PROJECT_KEY} \
+                        -Dsonar.sources=. \
+                        -Dsonar.host.url=${env.SONAR_SERVER_URL} \
+                        -Dsonar.login=${env.SONAR_LOGIN}
+                    """
+                }
                 }
             }
         }
