@@ -10,6 +10,7 @@ pipeline {
         EMAIL_NOTIFICATION = 'pavankuma239@gmail.com'
 	JAVA_HOME = '/opt/jdk-21.0.1'
         PATH = "${JAVA_HOME}/bin:${env.PATH}"
+	ACCESS_KEY_ID = credentials('my-access-key')
     }
     
     stages {
