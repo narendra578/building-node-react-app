@@ -65,10 +65,10 @@ pipeline {
         }
 
 
-        stage("Test") {
+        stage("Deliver") {
             steps {
                 echo "Running tests..."
-                sh './jenkins/scripts/test.sh'
+                sh './jenkins/scripts/deliver.sh'
             }
         }
 
