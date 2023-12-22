@@ -76,19 +76,27 @@ pipeline {
             steps {
                 echo "Updating version..."
                 script {
-	            def packageJsonContent = readFile(file: 'package.json').trim()
-	            def matcher = (packageJsonContent =~ /"version"\s*:\s*"(\d+\.\d+\.\d+)"/)
-	            
-	            if (matcher.find()) {
-	                def currentVersion = matcher.group(1)
-	                def newVersion = currentVersion.replaceAll(/(\d+)$/) { it.toInteger() + 1 }
-	                def updatedContent = matcher.replaceAll("\"version\": \"$newVersion\"")
-	
-	                writeFile file: 'package.json', text: updatedContent
-	                echo "Updated version to: ${newVersion}"
-	            } else {
-	                error "Failed to find version in package.json"
-	            }
+                def packageJsonContent = readFile(file: 'package.json').trim()
+                def matcher = (packageJsonContent =~ /"version"\s*:\s*"(\d+\.\d+\.\d+)"/)
+
+                if (matcher.find()) {
+                    def currentVersion = matcher.group(1)
+
+                    // Check if the version has a numeric part at the end
+                    def numericPart = (currentVersion =~ /\d+$/)
+
+                    if (numericPart.find()) {
+                        def newVersion = currentVersion.replaceAll(/(\d+)$/) { it.toInteger() + 1 }
+                        def updatedContent = matcher.replaceAll("\"version\": \"$newVersion\"")
+
+                        writeFile file: 'package.json', text: updatedContent
+                        echo "Updated version to: ${newVersion}"
+                    } else {
+                        error "Version in package.json does not end with a numeric part"
+                    }
+                } else {
+                    error "Failed to find version in package.json"
+                }
             }
         }
 	}
