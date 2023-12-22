@@ -92,17 +92,20 @@ pipeline {
 	    steps {
 	        script {
 	            // Committing and pushing version update
-	            withCredentials([usernamePassword(credentialsId: 'gitcred', passwordVariable: 'GIT_ACCESS_TOKEN', usernameVariable: 'GIT_USERNAME')]) {
+	            withCredentials([usernamePassword(credentialsId: 'gitcreds', passwordVariable: 'GIT_ACCESS_TOKEN', usernameVariable: 'GIT_USERNAME')]) {
 	                sh '''
 	                    git config --global user.email "pavankuma239@gmail.com"
 	                    git config --global user.name "pavan"
+	                    git checkout -b master
 	                    git add package.json
 	                    git commit -m "Bump version"
-                    	    git push https://${GIT_USERNAME}:${GIT_ACCESS_TOKEN}@github.com/pavanpandu-aws/building-node-react-app.git master
+	                    git push https://${GIT_USERNAME}:${GIT_ACCESS_TOKEN}@github.com/pavanpandu-aws/building-node-react-app.git master
 	                '''
 	            }
 	        }
 	    }
+	
+
 	
             post {
                 failure {
