@@ -8,6 +8,7 @@ pipeline {
         SONAR_LOGIN = credentials('sonar-cred')
         SONAR_SERVER_URL = 'http://172.174.215.47:9000/'
         EMAIL_NOTIFICATION = 'pavankuma239@gmail.com'
+	JAVA_TOOL = 'openjdk'
     }
     
     stages {
@@ -49,6 +50,8 @@ pipeline {
         stage("SonarQube analysis") {
             steps {
                 script {
+                    def javaHome = tool JAVA_TOOL
+                    env.PATH = "${javaHome}/bin:${env.PATH}"
                     withSonarQubeEnv('SonarQubeDev') {
                         def scannerHome = tool 'sonarScanner'
                         sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=${env.SONAR_PROJECT_KEY} -Dsonar.login=${env.SONAR_LOGIN} -Dsonar.host.url=${env.SONAR_SERVER_URL}"
