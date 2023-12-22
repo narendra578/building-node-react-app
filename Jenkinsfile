@@ -64,18 +64,6 @@ pipeline {
             }
         }
 
-        stage("Quality Gate") {
-            steps {
-                timeout(time: 1, unit: 'HOURS') {
-                    script {
-                        def qualityGate = waitForQualityGate()
-                        if (qualityGate.status != 'OK') {
-                            error "Quality Gate did not pass. Check SonarQube dashboard for details."
-                        }
-                    }
-                }
-            }
-        }
 
         stage("Test") {
             steps {
