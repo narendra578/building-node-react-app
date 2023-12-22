@@ -1,8 +1,3 @@
-@NonCPS
-def evaluateJson(json) {
-    return new GroovyShell().evaluate(json)
-}
-
 pipeline {
     agent any
     
@@ -81,14 +76,19 @@ pipeline {
             steps {
                 echo "Updating version..."
                 script {
-                    def packageJsonContent = readFile(file: 'package.json').trim()
-                    def packageJson = evaluateJson(packageJsonContent)
-                    def currentVersion = packageJson.version
-                    def newVersion = currentVersion.replaceAll(/(\d+)$/) { it.toInteger() + 1 }
-                    packageJson.version = newVersion
-                    writeFile file: 'package.json', text: groovy.json.JsonOutput.toJson(packageJson)
-                    echo "Updated version to: ${newVersion}"
-                }
+	            def packageJsonContent = readFile(file: 'package.json').trim()
+	            def matcher = (packageJsonContent =~ /"version"\s*:\s*"(\d+\.\d+\.\d+)"/)
+	            
+	            if (matcher.find()) {
+	                def currentVersion = matcher.group(1)
+	                def newVersion = currentVersion.replaceAll(/(\d+)$/) { it.toInteger() + 1 }
+	                def updatedContent = matcher.replaceAll("\"version\": \"$newVersion\"")
+	
+	                writeFile file: 'package.json', text: updatedContent
+	                echo "Updated version to: ${newVersion}"
+	            } else {
+	                error "Failed to find version in package.json"
+	            }
             }
         }
 
