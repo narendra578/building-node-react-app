@@ -76,13 +76,14 @@ pipeline {
             steps {
                 echo "Updating version..."
                 script {
-                    def packageJson = readJSON file: 'package.json'
-                    def currentVersion = packageJson.version
-                    def newVersion = currentVersion.replaceAll(/(\d+)$/) { it.toInteger() + 1 }
-                    packageJson.version = newVersion
-                    writeJSON file: 'package.json', json: packageJson
-                    echo "Updated version to: ${newVersion}"
-                }
+	            def packageJsonContent = readFile(file: 'package.json').trim()
+	            def packageJson = readJSON text: packageJsonContent
+	            def currentVersion = packageJson.version
+	            def newVersion = currentVersion.replaceAll(/(\d+)$/) { it.toInteger() + 1 }
+	            packageJson.version = newVersion
+	            writeFile file: 'package.json', text: packageJson.toString()
+	            echo "Updated version to: ${newVersion}"
+	        }
             }
         }
 
