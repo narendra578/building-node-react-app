@@ -92,7 +92,7 @@ pipeline {
 	    steps {
 	        script {
 	            // Committing and pushing version update
-	            withCredentials([usernamePassword(credentialsId: 'gitcreds', passwordVariable: 'GIT_ACCESS_TOKEN', usernameVariable: 'GIT_USERNAME')]) {
+	            withCredentials([usernamePassword(credentialsId: 'gitcred', passwordVariable: 'GIT_ACCESS_TOKEN', usernameVariable: 'GIT_USERNAME')]) {
 	                sh '''
 	                    git config --global user.email "pavankuma239@gmail.com"
 	                    git config --global user.name "pavan"
