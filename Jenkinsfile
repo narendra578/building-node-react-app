@@ -90,20 +90,21 @@ pipeline {
 
 
         stage("Commit and Push Version Update") {
-            steps {
-                script {
-            // Committing and pushing version update
-            withCredentials([sshUserPrivateKey(credentialsId: 'sshkey', keyFileVariable: 'SSH_KEY')]) {
-                sh '''
-                    git config --global user.email "pavankuma239@gmail.com"
-                    git config --global user.name "pavan"
-                    git add package.json
-                    git commit -m "Bump version"
-                    GIT_SSH_COMMAND="ssh -i $SSH_KEY" git push git@github.com:pavanpandu-aws/building-node-react-app.git HEAD
-                '''
-            }
-        }
-    }
+	    steps {
+	        script {
+	            // Committing and pushing version update
+	            withCredentials([usernamePassword(credentialsId: 'gitcreds', passwordVariable: 'GIT_ACCESS_TOKEN', usernameVariable: 'GIT_USERNAME')]) {
+	                sh '''
+	                    git config --global user.email "pavankuma239@gmail.com"
+	                    git config --global user.name "pavan"
+	                    git add package.json
+	                    git commit -m "Bump version"
+	                    git push https://${GIT_USERNAME}:${GIT_ACCESS_TOKEN}@github.com/pavanpandu-aws/building-node-react-app.git HEAD
+	                '''
+	            }
+	        }
+	    }
+	
             post {
                 failure {
                     echo "Build failed. Sending alerts..."
