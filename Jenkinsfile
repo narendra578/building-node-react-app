@@ -88,19 +88,25 @@ pipeline {
 
 
 
-        stage("Commit and Push Version Update") {
+        stage("Commit and Push") {
             steps {
                 echo "Committing and pushing version update..."
                 script {
+                    // Configure Git user email and name
                     sh 'git config user.email "pavankuma239@gmail.com"'
                     sh 'git config user.name "pavan"'
+
+                    // Add and commit changes
                     sh 'git add package.json'
                     sh 'git commit -m "Bump version"'
-                    sh 'git push origin ${env.DEV_SCM_BRANCH}'
+
+                    // Push changes to the repository
+                    sh 'git push origin HEAD'
                 }
             }
         }
     }
+
 
     post {
         failure {
