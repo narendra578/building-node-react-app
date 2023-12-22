@@ -1,3 +1,8 @@
+@NonCPS
+def evaluateJson(json) {
+    return new GroovyShell().evaluate(json)
+}
+
 pipeline {
     agent any
     
@@ -76,14 +81,14 @@ pipeline {
             steps {
                 echo "Updating version..."
                 script {
-	            def packageJsonContent = readFile(file: 'package.json').trim()
-	            def packageJson = readJSON text: packageJsonContent
-	            def currentVersion = packageJson.version
-	            def newVersion = currentVersion.replaceAll(/(\d+)$/) { it.toInteger() + 1 }
-	            packageJson.version = newVersion
-	            writeFile file: 'package.json', text: packageJson.toString()
-	            echo "Updated version to: ${newVersion}"
-	        }
+                    def packageJsonContent = readFile(file: 'package.json').trim()
+                    def packageJson = evaluateJson(packageJsonContent)
+                    def currentVersion = packageJson.version
+                    def newVersion = currentVersion.replaceAll(/(\d+)$/) { it.toInteger() + 1 }
+                    packageJson.version = newVersion
+                    writeFile file: 'package.json', text: groovy.json.JsonOutput.toJson(packageJson)
+                    echo "Updated version to: ${newVersion}"
+                }
             }
         }
 
