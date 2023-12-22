@@ -11,27 +11,33 @@ pipeline {
     }
     
     stages {
-        stage("Check Node.js and npm") {
-            steps {
-                script {
-                    def nodeInstalled = tool 'NodeJS' == null
-                    if (nodeInstalled) {
-                        echo "Node.js not found. Installing Node.js..."
-                        tool name: 'NodeJS', type: 'jenkins.plugins.nodejs.tools.NodeJSInstallation'
-                    } else {
-                        echo "Node.js is already installed."
-                    }
+	stage("Check and Install Node.js and npm") {
+	    steps {
+	        script {
+	            // Check if Node.js is installed
+	            def nodeInstalled = sh(script: 'command -v node', returnStatus: true) == 0
+	
+	            if (!nodeInstalled) {
+	                echo "Node.js not found. Installing Node.js..."
+	                sh 'curl -fsSL https://deb.nodesource.com/setup_14.x | sudo -E bash -'
+	                sh 'sudo apt-get install -y nodejs'
+	            } else {
+	                echo "Node.js is already installed."
+	            }
+	
+	            // Check if npm is installed
+	            def npmInstalled = sh(script: 'command -v npm', returnStatus: true) == 0
+	
+	            if (!npmInstalled) {
+	                echo "npm not found. Installing npm..."
+	                sh 'sudo apt-get install -y npm'
+	            } else {
+	                echo "npm is already installed."
+	            }
+	        }
+	    }
+	}
 
-                    def npmHome = sh(script: 'which npm', returnStatus: true).trim()
-                    if (npmHome) {
-                        echo "npm is already installed."
-                    } else {
-                        echo "npm not found. Installing npm..."
-                        sh 'curl -L https://www.npmjs.com/install.sh | sh'
-                    }
-                }
-            }
-        }
 
 	stage("Checkout") {
             steps {
