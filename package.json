@@ -1,6 +1,6 @@
 {
   "name": "simple-node-js-react-npm-app",
-  "version": "0.1.1",
+  "version": "1.1.2",
   "private": true,
   "dependencies": {
     "react": "^16.0.0",
