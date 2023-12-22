@@ -91,6 +91,7 @@ pipeline {
 	            }
             }
         }
+	}
 
         stage("Commit and Push Version Update") {
             steps {
