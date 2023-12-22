@@ -2,7 +2,7 @@ pipeline {
     agent any
     
     environment {
-        DEV_SCM_REPOSITORY = 'git@github.com:pavanpandu-aws/building-node-react-app.git'
+        DEV_SCM_REPOSITORY = 'https://github.com/pavanpandu-aws/building-node-react-app.git'
         DEV_SCM_BRANCH = 'master'
         SONAR_PROJECT_KEY = 'demo'
         SONAR_SERVER_URL = 'http://172.174.215.47:9000'
