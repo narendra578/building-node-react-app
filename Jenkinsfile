@@ -88,24 +88,22 @@ pipeline {
 
 
 
-        stage("Commit and Push") {
+        stage("Commit and Push Version Update") {
             steps {
-                echo "Committing and pushing version update..."
                 script {
-                    // Configure Git user email and name
-                    sh 'git config user.email "pavankuma239@gmail.com"'
-                    sh 'git config user.name "pavan"'
-
-                    // Add and commit changes
-                    sh 'git add package.json'
-                    sh 'git commit -m "Bump version"'
-
-                    // Push changes to the repository
-                    sh 'git push origin HEAD'
+                    // Committing and pushing version update
+                    withCredentials([sshUserPrivateKey(credentialsId: 'sshkey', keyFileVariable: 'SSH_KEY')]) {
+                        sh '''
+                            git config --global user.email "pavankuma239@gmail.com"
+                            git config --global user.name "pavan"
+                            git add package.json
+                            git commit -m "Bump version"
+                            GIT_SSH_COMMAND="ssh -i $SSH_KEY" git push git@github.com:pavanpandu-aws/building-node-react-app.git HEAD
+                        '''
+                    }
                 }
             }
-        }
-    }
+	}
 
 
     post {
