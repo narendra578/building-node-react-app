@@ -73,33 +73,44 @@ pipeline {
         }
 
         stage("Update Version") {
-            steps {
-                echo "Updating version..."
-                script {
-                def packageJsonContent = readFile(file: 'package.json').trim()
-                def matcher = (packageJsonContent =~ /"version"\s*:\s*"(\d+\.\d+\.\d+)"/)
-
-                if (matcher.find()) {
-                    def currentVersion = matcher.group(1)
-
-                    // Check if the version has a numeric part at the end
-                    def numericPart = (currentVersion =~ /\d+$/)
-
-                    if (numericPart.find()) {
-                        def newVersion = currentVersion.replaceAll(/(\d+)$/) { it.toInteger() + 1 }
-                        def updatedContent = matcher.replaceAll("\"version\": \"$newVersion\"")
-
-                        writeFile file: 'package.json', text: updatedContent
-                        echo "Updated version to: ${newVersion}"
-                    } else {
-                        error "Version in package.json does not end with a numeric part"
-                    }
-                } else {
-                    error "Failed to find version in package.json"
-                }
-            }
-        }
+	    steps {
+	        echo "Updating version..."
+	        script {
+	            def packageJsonFile = 'package.json'
+	            
+	            // Read the content of package.json
+	            def packageJsonContent = readFile(file: packageJsonFile).trim()
+	
+	            // Extract the current version using a regular expression
+	            def matcher = packageJsonContent =~ /"version"\s*:\s*"(\d+\.\d+\.\d+)"/
+	
+	            if (matcher.find()) {
+	                def currentVersion = matcher.group(1)
+	
+	                // Extract the numeric part of the version
+	                def numericPart = currentVersion =~ /\d+$/
+	
+	                if (numericPart.find()) {
+	                    // Increment the numeric part by 1
+	                    def newNumericPart = numericPart.group(0).toInteger() + 1
+	
+	                    // Update the version in the content
+	                    def updatedContent = packageJsonContent.replaceFirst(/("version"\s*:\s*"\d+\.\d+\.)(\d+)"/, "\$1$newNumericPart\"")
+	
+	                    // Write the updated content back to package.json
+	                    writeFile file: packageJsonFile, text: updatedContent
+	
+	                    echo "Updated version to: ${currentVersion.replaceFirst(/\d+$/, newNumericPart)}"
+	                } else {
+	                    error "Version in package.json does not end with a numeric part"
+	                }
+	            } else {
+	                error "Failed to find version in package.json"
+	            }
+	        }
+	    }
 	}
+
 
         stage("Commit and Push Version Update") {
             steps {
