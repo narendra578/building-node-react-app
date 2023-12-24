@@ -2,13 +2,13 @@ pipeline {
     agent any
     
     environment {
-        DEV_SCM_REPOSITORY = 'https://github.com/pavanpandu-aws/building-node-react-app.git'
+        DEV_SCM_REPOSITORY = 'https://github.com/narendra578/building-node-react-app.git'
         DEV_SCM_BRANCH = 'master'
-        SONAR_PROJECT_KEY = 'demo'
-        SONAR_SERVER_URL = 'http://172.174.215.47:9000'
-        SONAR_LOGIN = 'a7fe1cf77dea3a840ac7b1c14266211ffa469399'
-        EMAIL_NOTIFICATION = 'pavankuma239@gmail.com'
-	JAVA_HOME = '/opt/jdk-21.0.1'
+        SONAR_PROJECT_KEY = 'sonar'
+        SONAR_SERVER_URL = 'http://54.160.110.171:9000'
+        SONAR_LOGIN = '5a0e6eb52fbb94e39cfe26eed84fe7ccd82e6e59'
+        EMAIL_NOTIFICATION = 'l.narendra98@gmail.com'
+	JAVA_HOME = '/usr/lib/jvm/java-11-openjdk-amd64/bin/java'
         PATH = "${JAVA_HOME}/bin:${env.PATH}"
     }
     
@@ -94,8 +94,8 @@ pipeline {
 	            // Committing and pushing version update
 	            withCredentials([usernamePassword(credentialsId: 'gitcred', passwordVariable: 'GIT_ACCESS_TOKEN', usernameVariable: 'GIT_USERNAME')]) {
 	                sh '''
-	                    git config --global user.email "pavankuma239@gmail.com"
-	                    git config --global user.name "pavan"
+	                    git config --global user.email "l.narendra@gmail.com"
+	                    git config --global user.name "narendra"
 	                    git checkout -b master
 	                    git add package.json
 	                    git commit -m "Bump version"
