@@ -5,7 +5,7 @@ pipeline {
         DEV_SCM_REPOSITORY = 'https://github.com/narendra578/building-node-react-app.git'
         DEV_SCM_BRANCH = 'master'
         SONAR_PROJECT_KEY = 'sonar'
-        SONAR_SERVER_URL = 'http://54.160.110.171:9000'
+        SONAR_SERVER_URL = 'http://54.237.11.48:9000/'
         SONAR_LOGIN = '5a0e6eb52fbb94e39cfe26eed84fe7ccd82e6e59'
         EMAIL_NOTIFICATION = 'l.narendra98@gmail.com'
 	JAVA_HOME = '/usr/lib/jvm/java-11-openjdk-amd64/bin/java'
