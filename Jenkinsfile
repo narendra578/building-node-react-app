@@ -4,9 +4,9 @@ pipeline {
     environment {
         DEV_SCM_REPOSITORY = 'https://github.com/narendra578/building-node-react-app.git'
         DEV_SCM_BRANCH = 'master'
-        SONAR_PROJECT_KEY = 'sonarqube-react'
-        SONAR_SERVER_URL = 'http://54.210.192.117:9000/'
-        SONAR_LOGIN = 'b336cf338708fc32b279500b77afec86cdbe3d06'
+        SONAR_PROJECT_KEY = 'sonarqube'
+        SONAR_SERVER_URL = 'http://3.90.85.107:9000//'
+        SONAR_LOGIN = '3018fc0fdaa8ed3cfaccb60db09008c21dadade6'
         EMAIL_NOTIFICATION = 'l.narendra98@gmail.com'
 	JAVA_HOME = '/usr/lib/jvm/java-11-openjdk-amd64/bin/java'
         PATH = "${JAVA_HOME}/bin:${env.PATH}"
