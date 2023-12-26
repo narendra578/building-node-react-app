@@ -99,7 +99,7 @@ pipeline {
 	                    git checkout -b master
 	                    git add package.json
 	                    git commit -m "Bump version"
-	                    git push https://${GIT_USERNAME}:${GIT_ACCESS_TOKEN}@github.com/pavanpandu-aws/building-node-react-app.git master
+	                    git push https://${GIT_USERNAME}:${GIT_ACCESS_TOKEN}@github.com/narendra578/building-node-react-app.git
 	                '''
 	            }
 	        }
